@@ -147,3 +147,11 @@ Important Notes
 
 ## AKS Details:- 
 ![](images/2024-10-26-16-25-29.png)
+
+# POST cleanup activity
+
+1. Delete entire resource group and all the component
+
+```
+az group delete --name aks-rg --yes --no-wait
+```
