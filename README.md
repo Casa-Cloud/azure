@@ -38,6 +38,7 @@ The document suggest that there are only 2 mandatory
 ```
 az aks create --name aks1 \
 --resource-group aks-rg \
+--tier free \
 --aad-tenant-id 4abb5e5e-af15-4a34-b3c2-18f4a9303ee4 \
 --aad-admin-group-object-ids 1cf2fc62-c73d-4a81-9635-6fb4187cfa8d \
 --enable-aad \
@@ -132,7 +133,6 @@ Important Notes
 > Group Object IDs: Replace <Group-Object-ID1> and <Group-Object-ID2> with the actual object IDs of the AAD groups. You can retrieve these IDs from Azure AD in the Azure portal or using the Azure CLI.
 
 > AAD Integration: This parameter requires that AAD integration (--enable-aad) is enabled for the AKS cluster.
-
 
 # Output:- 
 
