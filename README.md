@@ -155,3 +155,37 @@ Important Notes
 ```
 az group delete --name aks-rg --yes --no-wait
 ```
+
+# Pricing
+
+
+Here’s a Markdown table summarizing the Azure Public IP costs:
+
+| **Resource Group**       | **Resource Name**                     | **Type**                   | **Location** | **Cost (Estimated)/Month USD** |
+|--------------------------|---------------------------------------|----------------------------|--------------|-----------------------|
+| aks-rg                    | aks1                                  | Kubernetes service         | East US 2   | Free   |
+| node-rg                   | 76b46612-3fef-41ec-a9a6-2dd81e770f28 | Public IP address          | East US 2    | $2.63  |
+| node-rg                   | aks-agentpool-34015013-nsg           | Network security group     | East US 2    | Free   |
+| node-rg                   | aks-agentpool-34015013-routetable    | Route table                | East US 2    | Free   |
+| node-rg                   | aks-nodepool1-176777737-vmss         | Virtual machine scale set  | East US 2    | $32.56 |
+| node-rg                   | aks-vnet-34015013                    | Virtual network            | East US 2    | Free   |
+| node-rg                   | aks1-agentpool                       | Managed Identity           | East US 2    | Free   |
+| node-rg                   | kubernetes                           | Load balancer              | East US 2    | Free   |
+| NetworkWatcherRG          | NetworkWatcher_eastus2               | Network Watcher            | East US 2    | $05.80 |
+| Total                     |                                      |                            |              | $41.00 |
+
+Azure cost calculator for VMSS of AKS
+![](images/2024-10-26-19-08-05.png)
+
+Azure VNET cost
+![](images/2024-10-26-19-11-15.png)
+
+Load Balancer Cost 
+![](images/2024-10-26-19-15-53.png)
+
+Network watcher cost 
+https://azure.microsoft.com/en-us/pricing/details/network-watcher/
+
+Calculator 
+
+![](images/2024-10-26-19-20-06.png)
