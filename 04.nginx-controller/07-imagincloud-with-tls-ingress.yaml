@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: imagincloud-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-imagincloud"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - imagincloud.com
+    - dev.imagincloud.com
+    - sit.imagincloud.com
+    - uat.imagincloud.com
+    secretName: imagincloud-tls
+  rules:
+  - host: imagincloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80
+  - host: dev.imagincloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80
+  - host: sit.imagincloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80
+  - host: uat.imagincloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80

@@ -1,0 +1,50 @@
+# This works with http://mazacloud.com/api-docs/  I get Swagger DOC
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: casacloud-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: mazacloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80
+  - host: dev.mazacloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80
+  - host: sit.mazacloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80
+  - host: uat.mazacloud.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejstemplate
+            port:
+              number: 80
