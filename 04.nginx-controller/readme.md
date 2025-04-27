@@ -634,6 +634,8 @@ default         sh.helm.release.v1.nodejstemplate.v1                       helm.
 ingress-nginx   ingress-nginx-admission                                    Opaque                          3      14h
 ```
 
+## 📋 Final Things You Can Test Now
+
 ![](images/2025-04-27-16-59-06.png)
 
 ![](images/2025-04-27-17-01-08.png)
@@ -650,3 +652,147 @@ ingress-nginx   ingress-nginx-admission                                    Opaqu
 
 ![](images/2025-04-27-17-06-01.png)
 
+## 🎁 Bonus: Useful Commands for Future Monitoring
+
+Purpose	Command
+### Check all certificates	
+```
+kubectl get certificates -A
+```
+### Check cert-manager logs	
+```
+kubectl logs -n cert-manager -l app=cert-manager --follow
+```
+### Check Ingress resources	
+```
+kubectl get ingress
+```
+### View Secret details	
+```
+kubectl describe secret mazacloud-tls
+```
+### Force renew certificate	
+```
+kubectl delete certificate <name> (cert-manager will re-issue)
+```
+
+# Add automatic HTTP → HTTPS redirect now — cleanly and professionally 🚀
+This is important because:
+* 👉 Even if users accidentally type http://mazacloud.com,
+* 👉 They should immediately be redirected to https://mazacloud.com 🔒.
+
+✅ In NGINX Ingress, we can simply add an annotation:
+```
+nginx.ingress.kubernetes.io/ssl-redirect: "true"
+```
+
+✅ This tells NGINX:
+* "Always redirect HTTP traffic to HTTPS if TLS is configured."
+* ✅ No need to modify your app!
+* ✅ It's a behavior at the Ingress level itself!
+
+🛠 What We'll Do
+👉 Add this annotation to both your Ingress resources:
+
+08-mazacloud-with-tls-ingress-redirect.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mazacloud-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-mazacloud"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" # Added  this line
+spec:
+  ingressClassName: nginx
+```
+
+09-imagincloud-with-tls-ingress_redirect.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: imagincloud-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-imagincloud"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" ## Added this line
+spec:
+  ingressClassName: nginx
+```
+
+```
+kubectl apply -f 08-mazacloud-with-tls-ingress-redirect.yaml
+kubectl apply -f 09-imagincloud-with-tls-ingress_redirect.yaml
+
+Output:- 
+ingress.networking.k8s.io/mazacloud-ingress configured
+ingress.networking.k8s.io/imagincloud-ingress configured
+```
+
+## NOW AUTOMATIC REDIRECTION WILL HAPPEN SUCCESSFULLY
+Test by visiting http://mazacloud.com → should auto-redirect to https://mazacloud.com
+
+| Feature | Status |
+|:---|:---|
+| HTTPS Access Working | ✅ |
+| HTTP → HTTPS Auto-Redirect | ✅ |
+| SSL Certificates (Let's Encrypt) Issued | ✅ |
+| Certificates Auto-Renewal Configured | ✅ |
+| Separate Domains & Subdomains | ✅ |
+| NGINX Ingress Handling Everything | ✅ |
+| Production Grade Kubernetes Setup | ✅ |
+
+## Your Setup Architecture (Final)
+
+```
++------------------------+
+|   Browser (HTTP/HTTPS)  |
++-----------+------------+
+            |
+            v
++------------------------+
+|  Azure Load Balancer   |
+|    (Public IP)         |
++-----------+------------+
+            |
+            v
++----------------------------+
+|  NGINX Ingress Controller  |
+|         (Port 443)         |
++-----------+----------------+
+            |
+            v
++--------------------------------------------+
+|  Ingress Rule (mazacloud-ingress /          |
+|                imagincloud-ingress)         |
++-----------+--------------------------------+
+            |
+            v
++------------------------+
+| Kubernetes Service     |
++-----------+------------+
+            |
+            v
++------------------------+
+| Node.js Application Pod |
++------------------------+
+
+```
+
+## Where TLS Breaks in Our Current Architecture
+✅ Right now, TLS (HTTPS) is terminated at NGINX Ingress Controller.
+After that, traffic between:
+
+Ingress ➔ Service ➔ Pod
+
+is in plain HTTP (unencrypted) inside the Kubernetes cluster.
+
+
+![](images/2025-04-27-18-39-04.png)
+
+✅ But in highly secure environments (banks, healthcare),
+they want TLS everywhere, even inside Kubernetes.
+
+👉 That's called mTLS (Mutual TLS inside the cluster).
