@@ -1,12 +1,12 @@
 # Nginx Controller 
 production-grade Kubernetes Ingress setup:
 
-✅ Multiple custom domains (mazacloud.com, imagincloud.com)
-✅ Multiple subdomains (dev, sit, uat)
-✅ Single AKS Load Balancer handling all traffic
-✅ Single nodejstemplate service serving all domains cleanly
-✅ Swagger UI works naturally at /api-docs without any hacks
-✅ All fully routed with clean Ingress rules
+* ✅ Multiple custom domains (mazacloud.com, imagincloud.com)
+* ✅ Multiple subdomains (dev, sit, uat)
+* ✅ Single AKS Load Balancer handling all traffic
+* ✅ Single nodejstemplate service serving all domains cleanly
+* ✅ Swagger UI works naturally at /api-docs without any hacks
+* ✅ All fully routed with clean Ingress rules
 
 ## RBAC needed 
 
@@ -111,7 +111,7 @@ Once DNS is ready (~2-5 minutes for propagation),
 
 👉 Open your browser:
 ```
-http://mazacloud.com/nodejstemplate
+http://mazacloud.com/api-docs
 ```
 
 # Single Host multi ENV ingress

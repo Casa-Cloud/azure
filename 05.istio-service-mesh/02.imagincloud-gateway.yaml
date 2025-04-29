@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: imagincloud-gateway
+  namespace: default
+spec:
+  selector:
+    istio: ingressgateway-imagincloud
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: imagincloud-tls
+    hosts:
+    - imagincloud.com
+    - dev.imagincloud.com
+    - sit.imagincloud.com
+    - uat.imagincloud.com
