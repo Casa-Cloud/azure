@@ -98,7 +98,7 @@ spec:
           class: nginx
 ```
 
-## 🚀 Step 4B: Apply Both ClusterIssuers
+## 🚀 Step 4B: Apply ClusterIssuers
 ```
 kubectl apply -f 04.clusterissuer-mazacloud.yaml
 ```
