@@ -224,7 +224,32 @@ NAME                                   TYPE                 DATA   AGE
 mazacloud-tls                          kubernetes.io/tls    2      90s
 ```
 
-## 📋Step 6: Final Things You Can Test Now
+## Step 4F - Check Secret Details 
+```
+kubectl describe secret mazacloud-tls
+```
+```
+Name:         mazacloud-tls
+Namespace:    default
+Labels:       controller.cert-manager.io/fao=true
+Annotations:  cert-manager.io/alt-names: dev.mazacloud.com,mazacloud.com,sit.mazacloud.com,uat.mazacloud.com
+              cert-manager.io/certificate-name: mazacloud-tls
+              cert-manager.io/common-name: mazacloud.com
+              cert-manager.io/ip-sans: 
+              cert-manager.io/issuer-group: cert-manager.io
+              cert-manager.io/issuer-kind: ClusterIssuer
+              cert-manager.io/issuer-name: letsencrypt-mazacloud
+              cert-manager.io/uri-sans: 
+
+Type:  kubernetes.io/tls
+
+Data
+====
+tls.crt:  3708 bytes
+tls.key:  1679 bytes
+```
+
+## 📋Step 5: Final Things You Can Test Now
 
 ![](../../images/2025-04-27-16-59-06.png)
 
