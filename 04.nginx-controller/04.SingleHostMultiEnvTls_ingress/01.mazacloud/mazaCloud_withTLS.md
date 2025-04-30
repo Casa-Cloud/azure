@@ -1,4 +1,4 @@
-# Imagin Cloud with TLS
+# MazaCloud with TLS
 
 
 ![](../../images/2025-05-01-00-13-46.png)
