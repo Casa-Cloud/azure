@@ -1,8 +1,9 @@
 # Imagin Cloud with TLS
-## Your Setup Architecture (Final)
+
 
 ![](../../images/2025-05-01-00-13-46.png)
 
+## Your Setup Architecture
 ```
 +------------------------+
 |   Browser (HTTP/HTTPS)  |
