@@ -1,0 +1,11 @@
+# pvc-disk.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-azuredisk
+spec:
+  accessModes: ["ReadWriteOnce"]         # RWO = 1 node at a time
+  storageClassName: managed-csi          # change to managed-csi-premium if you prefer
+  resources:
+    requests:
+      storage: 128Gi

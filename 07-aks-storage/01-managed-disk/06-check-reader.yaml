@@ -1,0 +1,18 @@
+# check-reader.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: reader
+  namespace: demo-disk
+spec:
+  containers:
+    - name: sh
+      image: mcr.microsoft.com/cbl-mariner/base/core:2.0
+      command: ["sh","-c","ls -l /data && tail -n 20 /data/hello.txt || true && sleep 3600"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: pvc-azuredisk-reuse

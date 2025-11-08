@@ -1,0 +1,30 @@
+# deploy-disk.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: disk-writer
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: disk-writer }
+  template:
+    metadata:
+      labels: { app: disk-writer }
+    spec:
+      containers:
+        - name: writer
+          image: ubuntu:22.04
+          command: ["/bin/bash","-c"]
+          args:
+            - |
+              while true; do
+                echo "$(date)  pod=${POD_NAME} host=${HOSTNAME}" | tee -a /data/hello2.txt;
+                sleep 5;
+              done
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-azuredisk

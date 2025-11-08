@@ -1,0 +1,13 @@
+# 04-pvc-reuse.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-azuredisk-reuse
+  namespace: demo-disk
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  resources:
+    requests:
+      storage: 128Gi            # must be <= PV capacity
+  storageClassName: managed-csi # match PV's storageClass
+  volumeName: pvc-02b34d3b-d9f8-4be2-91b3-ac788ed8500a # match PV's volumeName

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+  namespace: demo-disk
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: filebrowser }
+  template:
+    metadata:
+      labels: { app: filebrowser }
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      containers:
+        - name: fb
+          image: filebrowser/filebrowser:latest
+          args: ["--port","8080","--address","0.0.0.0","--root","/srv",
+                 "--database","/database/filebrowser.db"]
+          ports: [{ containerPort: 8080 }]
+          volumeMounts:
+            - { name: data, mountPath: /srv }
+            - { name: data, mountPath: /database, subPath: fb-db }
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-azuredisk-reuse
