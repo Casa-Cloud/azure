@@ -1,0 +1,13 @@
+# 02-pvc-azurefile-smb.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-azurefile-smb
+  namespace: demo-azurefile-smb
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: azurefile-premium-smb
+  resources:
+    requests:
+      storage: 10Gi

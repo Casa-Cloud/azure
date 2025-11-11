@@ -50,7 +50,7 @@ spec:
 Apply 
 
 ```bash
-kubectl apply -f 01-pvc-disk.yaml
+kubectl apply -f 07-aks-storage/01-managed-disk/01-pvc-disk.yaml 
 kubectl get pvc pvc-azuredisk -w
 ```
 Output
@@ -62,11 +62,11 @@ NAME            STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   VOLU
 pvc-azuredisk   Pending                                      managed-csi    <unset>                 8s
 ```
 
+> At this point no disk is created
+
+![](images/2025-11-09-11-45-15.png)
+
 ![](images/2025-11-09-00-56-34.png)
-
-## You can see th Disk is really created and attached to one of the VMSS VM 
-
-![](images/2025-11-09-03-11-59.png)
 
 ### We’ll run a simple Ubuntu pod that writes a file to the mounted disk.
 
@@ -92,7 +92,7 @@ spec:
           args:
             - |
               while true; do
-                date | tee -a /data/hello.txt;
+                echo "$(date)  pod=${POD_NAME} host=${HOSTNAME}" | tee -a /data/hello2.txt;
                 sleep 5;
               done
           volumeMounts:
@@ -105,7 +105,7 @@ spec:
 ```
 ### Apply the deployment
 ```bash
-kubectl apply -f 02-deploy-disk.yaml
+kubectl apply -f 07-aks-storage/01-managed-disk/02-deploy-disk.yaml
 kubectl rollout status deploy/disk-writer
 kubectl get pods -o wide
 ```
@@ -116,16 +116,27 @@ kubectl apply -f 07-aks-storage/01-managed-disk/02-deploy-disk.yaml
 deployment.apps/disk-writer created
 alokadhao@192 azure % kubectl rollout status deploy/disk-writer
 deployment "disk-writer" successfully rolled out
+
+NAME                           READY   STATUS    RESTARTS       AGE   IP            NODE                                NOMINATED NODE   READINESS GATES
+disk-writer-68d4f5f899-gh6nr   1/1     Running   0              32s   10.244.0.59   aks-nodepool1-11014092-vmss000000   <none>           <none>
+disk-writer-68d4f5f899-w4jfs   1/1     Running   0              32s   10.244.0.60   aks-nodepool1-11014092-vmss000000   <none>           <none>
+reader                         1/1     Running   9 (101s ago)   9h    10.244.0.58   aks-nodepool1-11014092-vmss000000   <none>           <none>
 ```
+
+
+
+## You can see th Disk is really created and attached to one of the VMSS VM 
+
+![](images/2025-11-09-03-11-59.png)
 
 ### Verify the disk is writable & data persists
 
 ```bash
 # Get pod name
 POD=$(kubectl get pod -l app=disk-writer -n demo-disk -o jsonpath='{.items[0].metadata.name}')
-
+echo $POD
 # Watch file grow as the container writes timestamps
-kubectl exec -n demo-disk -it "$POD" -- sh -lc 'tail -f /data/hello.txt'
+kubectl exec -n demo-disk -it "$POD" -- sh -lc 'tail -f /data/hello2.txt'
 ```
 Output:- 
 
@@ -153,11 +164,13 @@ Sat Nov  8 17:17:41 UTC 2025
 ### Prove persistence across pod restarts
 ```bash
 # Delete the pod (Deployment will recreate it)
+POD=$(kubectl get pod -l app=disk-writer -n demo-disk -o jsonpath='{.items[0].metadata.name}')
+echo $POD
 kubectl delete pod "$POD" -n demo-disk
 
 # Wait for the new pod, then check the file again
 NEWPOD=$(kubectl get pod -l app=disk-writer -n demo-disk -o jsonpath='{.items[0].metadata.name}')
-kubectl exec -n demo-disk -it "$NEWPOD" -- sh -lc 'tail -n20 /data/hello.txt'
+kubectl exec -n demo-disk -it "$NEWPOD" -- sh -lc 'tail -n20 /data/hello2.txt'
 ```
 
 Output:- 
@@ -165,7 +178,7 @@ Output:-
  kubectl delete pod "$POD" -n demo-disk
 pod "disk-writer-76fc9895bb-747pd" deleted
 alokadhao@192 azure % NEWPOD=$(kubectl get pod -l app=disk-writer -n demo-disk -o jsonpath='{.items[0].metadata.name}')
-kubectl exec -n demo-disk -it "$NEWPOD" -- sh -lc 'tail -n20 /data/hello.txt'
+kubectl exec -n demo-disk -it "$NEWPOD" -- sh -lc 'tail -n20 /data/hello2.txt'
 Sat Nov  8 17:18:41 UTC 2025
 Sat Nov  8 17:18:46 UTC 2025
 Sat Nov  8 17:18:51 UTC 2025
@@ -206,7 +219,8 @@ disk-writer-76fc9895bb-dwr76   1/1     Running   0          18s     10.244.0.40 
 alokadhao@192 azure % kubectl describe pod -n demo-disk | grep -i "multi-attach\|attached to a node" -n || true
 ```
 
-I see 2 pods running
+> I see 2 pods running
+
 ![](images/2025-11-09-01-25-05.png)
 
 #### Pod1
@@ -214,7 +228,7 @@ I see 2 pods running
 #### Pod2
 ![](images/2025-11-09-01-26-32.png)
 
-## See the actual Azure Disk
+## See the actual Azure Disk - Create a UI deployment
 
 ### Create a secret
 ```bash
@@ -258,13 +272,14 @@ spec:
 ```
 Execute
 ```bash
-
-
-kubectl port-forward deploy/filebrowser 8080:80
+kubectl apply -f 07-aks-storage/01-managed-disk/03-web-browse-disk-files.yaml
+kubectl rollout status deploy/filebrowser
+kubectl logs deploy/filebrowser -n demo-disk --tail=50
+kubectl port-forward deploy/filebrowser -n demo-disk 8080:8080
 ```
 Output:-
 ```bash
-apply -f 07-aks-storage/01-managed-disk/03-web-browse-disk-files.yaml
+kubectl apply -f 07-aks-storage/01-managed-disk/03-web-browse-disk-files.yaml
 deployment.apps/filebrowser configured
 alokadhao@192 azure % kubectl rollout status deploy/filebrowser
 

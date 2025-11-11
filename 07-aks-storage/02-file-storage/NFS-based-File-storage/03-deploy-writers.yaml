@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-writer
+  namespace: demo-azurefile
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: file-writer
+  template:
+    metadata:
+      labels:
+        app: file-writer
+    spec:
+      containers:
+        - name: writer
+          image: busybox:1.36
+          command: ["/bin/sh","-c"]
+          args:
+            - |
+              while true; do
+                echo "$(date) pod=${HOSTNAME} alok here" >> /mnt/share/hello.txt
+                sleep 2
+              done
+          volumeMounts:
+            - name: share
+              mountPath: /mnt/share
+      volumes:
+        - name: share
+          persistentVolumeClaim:
+            claimName: pvc-azurefile-nfs

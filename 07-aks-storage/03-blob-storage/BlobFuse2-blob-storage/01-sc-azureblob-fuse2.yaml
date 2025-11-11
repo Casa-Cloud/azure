@@ -1,0 +1,31 @@
+# sc-azureblob-fuse2-permissive.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azureblob-fuse2-permissive-new3
+provisioner: blob.csi.azure.com
+parameters:
+  protocol: fuse2
+  resourceGroup: myStorageDemoRG
+  storageAccount: demrrrragt123
+  containerName: blobfuse2-demo
+  # key-based auth (matches your secret)
+  csi.storage.k8s.io/provisioner-secret-name: blob-secret
+  csi.storage.k8s.io/provisioner-secret-namespace: demo-azureblob
+  csi.storage.k8s.io/node-stage-secret-name: blob-secret
+  csi.storage.k8s.io/node-stage-secret-namespace: demo-azureblob
+  csi.storage.k8s.io/node-publish-secret-name: blob-secret
+  csi.storage.k8s.io/node-publish-secret-namespace: demo-azureblob
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+
+# ✅ Only options BlobFuse2 accepts; these open perms for your user
+mountOptions:
+  - -o allow_other
+  - -o default_permissions
+  - -o umask=0000           # 0000 ⇒ files/dirs 0777 inside the mount
+  - -o attr_timeout=240
+  - -o entry_timeout=240
+  - -o negative_timeout=120
+

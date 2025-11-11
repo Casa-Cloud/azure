@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+  namespace: demo-azurefile-smb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filebrowser
+  template:
+    metadata:
+      labels:
+        app: filebrowser
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      containers:
+        - name: fb
+          image: filebrowser/filebrowser:latest
+          args:
+            - --port
+            - "8080"
+            - --address
+            - "0.0.0.0"
+            - --root
+            - /srv
+            - --database
+            - /database/filebrowser.db
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /srv
+            - name: data
+              mountPath: /database
+              subPath: fb-db
+          # optional: auto-create admin on first run if DB doesn't exist
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    if [ ! -f /database/filebrowser.db ]; then
+                      filebrowser -r /srv config init && \
+                      filebrowser -r /srv users add admin admin123 --perm.admin;
+                    fi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-azurefile-smb   # <- your Azure Files PVC name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filebrowser
+  namespace: demo-azurefile
+spec:
+  selector:
+    app: filebrowser
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

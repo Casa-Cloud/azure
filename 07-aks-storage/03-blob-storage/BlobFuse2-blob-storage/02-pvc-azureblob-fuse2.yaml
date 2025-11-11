@@ -1,0 +1,17 @@
+# pvc-azureblob-fuse2-permissive.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-azureblob-fuse2-permissive-new3
+  namespace: demo-azureblob
+spec:
+  accessModes: [ ReadWriteMany ]
+  storageClassName: azureblob-fuse2-permissive-new3
+  resources:
+    requests:
+      storage: 10Gi
+
+
+
+
+

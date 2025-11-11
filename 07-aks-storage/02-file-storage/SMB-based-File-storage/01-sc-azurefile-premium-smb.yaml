@@ -1,0 +1,12 @@
+# 01-sc-azurefile-premium-smb.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azurefile-premium-smb
+provisioner: file.csi.azure.com
+parameters:
+  skuName: Premium_LRS
+  protocol: smb
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

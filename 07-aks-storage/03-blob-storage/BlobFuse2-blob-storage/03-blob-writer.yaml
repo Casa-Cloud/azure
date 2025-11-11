@@ -1,0 +1,37 @@
+# deploy-blob-writer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blob-writer
+  namespace: demo-azureblob
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: blob-writer }
+  template:
+    metadata:
+      labels: { app: blob-writer }
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: writer
+          image: busybox:1.36
+          command: ["/bin/sh","-c"]
+          args:
+            - |
+              echo "Starting blob writer..."; \
+              while true; do \
+                echo "$(date) pod=${HOSTNAME}" >> /mnt/blob/hello.txt; \
+                sleep 2; \
+              done
+          volumeMounts:
+            - name: share
+              mountPath: /mnt/blob
+      volumes:
+        - name: share
+          persistentVolumeClaim:
+            claimName: pvc-azureblob-fuse2-permissive-new3
