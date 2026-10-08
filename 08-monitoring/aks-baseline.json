@@ -1,0 +1,48 @@
+{
+  "dashboard": {
+    "uid": "aks-baseline",
+    "title": "AKS - Baseline (Managed Prometheus)",
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "30s",
+    "tags": ["aks", "baseline", "prometheus", "amw"],
+    "panels": [
+      {
+        "type": "stat",
+        "title": "Total Pods",
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 },
+        "targets": [
+          { "refId": "A", "expr": "count(kube_pod_info)", "instant": true }
+        ]
+      },
+      {
+        "type": "stat",
+        "title": "Pods Not Ready",
+        "gridPos": { "x": 6, "y": 0, "w": 6, "h": 5 },
+        "targets": [
+          { "refId": "B", "expr": "sum(kube_pod_status_ready{condition='false'})", "instant": true }
+        ]
+      },
+      {
+        "type": "timeseries",
+        "title": "Node CPU (avg %)",
+        "gridPos": { "x": 0, "y": 5, "w": 12, "h": 7 },
+        "targets": [
+          { "refId": "C", "expr": "100 - (avg(rate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)" }
+        ]
+      },
+      {
+        "type": "timeseries",
+        "title": "Pod Restarts (per minute)",
+        "gridPos": { "x": 0, "y": 12, "w": 12, "h": 7 },
+        "targets": [
+          { "refId": "D", "expr": "sum(rate(kube_pod_container_status_restarts_total[1m]))" }
+        ]
+      }
+    ],
+    "templating": { "list": [] }
+  },
+  "folderId": 0,
+  "overwrite": true
+}
