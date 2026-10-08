@@ -287,3 +287,137 @@ az storage blob download \
   --auth-mode login
 ```
 
+# Test with Node.js
+
+The demo uses `DefaultAzureCredential`. Locally it uses your Azure CLI login. In
+AKS, it automatically uses the projected Workload Identity token.
+
+## Run locally
+
+The signed-in developer must have `Storage Blob Data Contributor` on the storage
+account or container.
+
+```shell
+cd 09.aks-workload-identity/storage-account-connect/nodejs-demo
+
+npm init --yes
+npm install @azure/identity @azure/storage-blob
+
+export STORAGE_ACCOUNT_NAME="workloadidentitysa121"
+export CONTAINER_NAME="workload-identity-demo"
+
+az login
+node index.mjs
+```
+
+Expected output includes:
+
+```text
+Uploaded node-identity-proof.txt. Blobs in workload-identity-demo:
+- identity-proof.txt
+- node-identity-proof.txt
+Downloaded content: Node.js accessed Blob Storage using AKS Workload Identity.
+```
+
+## Run in AKS with Workload Identity
+
+Run these commands from the repository root after loading the variables from
+`.env`. The pod uses the existing annotated Kubernetes service account.
+
+```shell
+source 09.aks-workload-identity/storage-account-connect/.env
+
+kubectl create configmap node-blob-demo \
+  --namespace "$NAMESPACE" \
+  --from-file=index.mjs=09.aks-workload-identity/storage-account-connect/nodejs-demo/index.mjs \
+  --dry-run=client \
+  --output yaml | kubectl apply -f -
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: node-blob-demo
+  namespace: "$NAMESPACE"
+  labels:
+    azure.workload.identity/use: "true"
+spec:
+  serviceAccountName: "$SERVICE_ACCOUNT"
+  restartPolicy: Never
+  containers:
+    - name: node
+      image: node:22-bookworm-slim
+      workingDir: /app
+      command: ["/bin/sh", "-c"]
+      args:
+        - npm init --yes &&
+          npm install @azure/identity @azure/storage-blob &&
+          cp /demo/index.mjs /app/index.mjs &&
+          node /app/index.mjs
+      env:
+        - name: STORAGE_ACCOUNT_NAME
+          value: "$STORAGE_ACCOUNT_NAME"
+        - name: CONTAINER_NAME
+          value: "workload-identity-demo"
+      volumeMounts:
+        - name: demo
+          mountPath: /demo
+          readOnly: true
+  volumes:
+    - name: demo
+      configMap:
+        name: node-blob-demo
+EOF
+
+kubectl logs --namespace "$NAMESPACE" --follow pod/node-blob-demo
+```
+
+No storage key, connection string, client secret, or manual `az login` is needed
+inside the Node.js pod.
+
+## Clean up the demo pod
+
+```shell
+kubectl delete pod node-blob-demo --namespace "$NAMESPACE"
+kubectl delete configmap node-blob-demo --namespace "$NAMESPACE"
+```
+
+## Clean up Azure resources
+
+The resource group is dedicated to this demo, so deleting it removes:
+
+- AKS and its managed node resource group
+- The storage account, containers, and blobs
+- The user-assigned managed identity and federated credential
+- Resource-scoped role assignments
+
+```shell
+source 09.aks-workload-identity/storage-account-connect/.env
+
+NODE_RESOURCE_GROUP=$(az aks show \
+  --subscription "$SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --name "$AKS_CLUSTER_NAME" \
+  --query nodeResourceGroup \
+  --output tsv)
+
+az group delete \
+  --subscription "$SUBSCRIPTION_ID" \
+  --name "$RESOURCE_GROUP" \
+  --yes
+```
+
+Verify that Azure removed both resource groups. Each command should return
+`false`:
+
+```shell
+az group exists \
+  --subscription "$SUBSCRIPTION_ID" \
+  --name "$RESOURCE_GROUP"
+
+az group exists \
+  --subscription "$SUBSCRIPTION_ID" \
+  --name "$NODE_RESOURCE_GROUP"
+```
+
+

@@ -348,12 +348,12 @@ az grafana service-account token create \
 You will only be able to view this token here once. Please save it in a secure place.
 {
   "id": 1,
-  "key": "glsa_g8yLqoV5DcPOk7OPPB7sMjleunfIFvYY_4bc4a584",
+  "key": "<redacted-grafana-service-account-token>",
   "name": "token-automation"
 }
 alokadhao@192 azure % 
 
-export GRAFANA_HTTP_TOKEN="glsa_g8yLqoV5DcPOk7OPPB7sMjleunfIFvYY_4bc4a584"
+export GRAFANA_HTTP_TOKEN="<your-grafana-service-account-token>"
 ```
 
 2C) List datasources (should include Azure Monitor)
