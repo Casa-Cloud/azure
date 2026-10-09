@@ -400,6 +400,7 @@ NODE_RESOURCE_GROUP=$(az aks show \
   --name "$AKS_CLUSTER_NAME" \
   --query nodeResourceGroup \
   --output tsv)
+echo $NODE_RESOURCE_GROUP
 
 az group delete \
   --subscription "$SUBSCRIPTION_ID" \
