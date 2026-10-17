@@ -7,6 +7,7 @@ az login
 
 ## To import all the vars from .env 
 ```shell
+cd 09.aks-workload-identity/storage-account-connect
 source ./.env
 ```
 
@@ -35,6 +36,7 @@ az aks create \
   --name $AKS_CLUSTER_NAME \
   --location $LOCATION \
   --node-count 1 \
+  --node-vm-size Standard_B4ms \
   --enable-oidc-issuer \
   --enable-workload-identity \
   --generate-ssh-keys
@@ -283,8 +285,13 @@ az storage blob download \
   --account-name "$STORAGE_ACCOUNT_NAME" \
   --container-name "$CONTAINER_NAME" \
   --name identity-proof.txt \
-  --file /dev/stdout \
+  --file tmp/downloaded-proof.txt \
   --auth-mode login
+```
+
+## Verify Downloaded File
+```shell
+cat tmp/downloaded-proof.txt 
 ```
 
 # Test with Node.js
@@ -317,6 +324,30 @@ Uploaded node-identity-proof.txt. Blobs in workload-identity-demo:
 - identity-proof.txt
 - node-identity-proof.txt
 Downloaded content: Node.js accessed Blob Storage using AKS Workload Identity.
+```
+
+## If auth error get user's ID and provide rbac
+```shell
+# 1. Get signed-in user's Object ID
+PRINCIPAL_ID=$(az ad signed-in-user show \
+  --query id \
+  --output tsv)
+
+# 2. Print Principal ID
+echo "Principal ID: $PRINCIPAL_ID"
+
+# 3. Create RBAC assignment
+az role assignment create \
+  --assignee-object-id "$PRINCIPAL_ID" \
+  --assignee-principal-type User \
+  --role "Storage Blob Data Contributor" \
+  --scope "$STORAGE_SCOPE"
+
+#4. Validate the access 
+az role assignment list \
+  --assignee "$PRINCIPAL_ID" \
+  --scope "$STORAGE_SCOPE" \
+  --output table
 ```
 
 ## Run in AKS with Workload Identity
