@@ -606,6 +606,74 @@ curl -X POST \
 
 - KEDA eventually scales the worker Deployment down to zero.
 
+# Phase 6 — Cleanup
+
+## Delete KEDA ScaledObject
+```shell
+kubectl delete scaledobject \
+  keda-worker-scaler \
+  -n $NAMESPACE
+```
+ - KEDA should also remove the HPA it created.
+
+ ```shell
+ kubectl get hpa -n $NAMESPACE
+ ```
+
+## Delete Kubernetes Deployments, service 
+```shell
+kubectl delete deployment \
+  keda-metrics-controller \
+  keda-worker-service \
+  -n $NAMESPACE
+  kubectl delete service \
+  keda-metrics-controller \
+  keda-worker-service \
+  -n $NAMESPACE
+```
+
+## Delete azure resource group 
+```shell
+az resource list \
+  --subscription $SUBSCRIPTION_ID \
+  --resource-group $RESOURCE_GROUP \
+  --output table
+```
+
+## Delete AKS Cluster 
+```
+az aks delete \
+  --subscription $SUBSCRIPTION_ID \
+  --resource-group $RESOURCE_GROUP \
+  --name $AKS_CLUSTER_NAME \
+  --yes
+```
+
+## Delete Azure Container Registry 
+
+```
+az acr delete \
+  --subscription $SUBSCRIPTION_ID \
+  --resource-group $RESOURCE_GROUP \
+  --name $ACR_NAME \
+  --yes
+```
+
+## Delete Resource Group 
+```shell
+az group delete \
+  --subscription $SUBSCRIPTION_ID \
+  --name $RESOURCE_GROUP \
+  --yes
+```
+
+## Validate 
+```shell
+az group exists \
+  --subscription $SUBSCRIPTION_ID \
+  --name $RESOURCE_GROUP
+```
+
 
 ## Final architecture 
 
