@@ -7,16 +7,28 @@ az login
 
 ## To import all the vars from .env 
 ```shell
-cd 09.aks-workload-identity/storage-account-connect
+cd 10.aks-keda/01-demo-keda-eventhub-node
 source ./.env
 ```
 
 ## Check all ENV vars 
 ```shell
-echo SUBSCRIPTION_ID = $SUBSCRIPTION_ID
-echo RESOURCE_GROUP = $RESOURCE_GROUP
-echo LOCATION = $LOCATION
-echo AKS_CLUSTER_NAME = $AKS_CLUSTER_NAME
+echo "SUBSCRIPTION_ID               = $SUBSCRIPTION_ID"
+echo "RESOURCE_GROUP                = $RESOURCE_GROUP"
+echo "LOCATION                      = $LOCATION"
+echo "AKS_CLUSTER_NAME              = $AKS_CLUSTER_NAME"
+echo "NAMESPACE                     = $NAMESPACE"
+echo "ACR_NAME                      = $ACR_NAME"
+echo "ACR_LOGIN_SERVER              = $ACR_LOGIN_SERVER"
+echo "IMAGE_TAG                     = $IMAGE_TAG"
+echo "IMAGE_TAG_KEDA_WORKER_SERVICE = $IMAGE_TAG_KEDA_WORKER_SERVICE"
+```
+## Create Resource Group
+```shell
+az group create \
+  --subscription $SUBSCRIPTION_ID \
+  --name $RESOURCE_GROUP \
+  --location $LOCATION
 ```
 
 ## Create AKS
@@ -36,7 +48,9 @@ az aks create \
 
 ## Get the cluster Credentials
 ```shell
-az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME
+az aks get-credentials \
+--resource-group $RESOURCE_GROUP \
+--name $AKS_CLUSTER_NAME
 ```
 
 ## Verify KEDA is enabled in AKS
@@ -465,8 +479,8 @@ spec:
   scaleTargetRef:
     name: keda-worker-service
 
-  pollingInterval: 10
-  cooldownPeriod: 60
+  pollingInterval: 3
+  cooldownPeriod: 10
 
   minReplicaCount: 0
   maxReplicaCount: 10
@@ -571,6 +585,32 @@ kubectl get pods \
 kubectl get hpa \
   -n $NAMESPACE \
   -w
+```
+
+## check matrics 
+```shell
+kubectl run curl-test \
+  --namespace=$NAMESPACE \
+  --rm -i \
+  --restart=Never \
+  --image=curlimages/curl \
+  -- \
+  curl -fsS \
+  http://keda-worker-service.keda-demo.svc.cluster.local:9001
+```
+
+## Update the message size to 50
+```shell
+kubectl run curl-test \
+  --namespace=$NAMESPACE \
+  --rm -i \
+  --restart=Never \
+  --image=curlimages/curl \
+  -- \
+  curl -fsS -X POST \
+  http://keda-metrics-controller.keda-demo.svc.cluster.local:9001/api/metrics \
+  -H "Content-Type: application/json" \
+  -d '{"pendingJobs":10}'
 ```
 
 ## Port-forward the Metrics Controller - terminal 3
