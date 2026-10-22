@@ -32,6 +32,13 @@ az group create \
 ```
 
 ## Create AKS
+### Following is for karpenter
+```
+--network-plugin azure \
+  --network-plugin-mode overlay \
+  --network-dataplane cilium \
+```
+
 ```shell
 az aks create \
   --subscription $SUBSCRIPTION_ID \
@@ -43,6 +50,10 @@ az aks create \
   --enable-oidc-issuer \
   --enable-workload-identity \
   --enable-keda \
+  --node-provisioning-mode Auto \
+  --network-plugin azure \
+  --network-plugin-mode overlay \
+  --network-dataplane cilium \
   --generate-ssh-keys
 ```
 
